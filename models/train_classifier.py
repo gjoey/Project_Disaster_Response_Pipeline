@@ -43,13 +43,13 @@ def build_model():
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
 
-    parameters = {
+    params = {
         'vect__ngram_range': ((1, 1), (1, 2)),
         'clf__estimator__n_estimators': [25, 50],
         'clf__estimator__criterion': ['entropy', 'gini']
     }
 
-    return GridSearchCV(pipeline, param_grid=parameters, verbose=2, n_jobs=-1)
+    return GridSearchCV(pipeline, param_grid=params, verbose=2, n_jobs=-1)
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
