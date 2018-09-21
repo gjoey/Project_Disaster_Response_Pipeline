@@ -1,24 +1,68 @@
 import sys
-
+import sqlalchemy as sql
+import numpy as np
+import pandas as pd
+import nltk
+nltk.download('punkt')
+nltk.download('wordnet') # download for lemmatization
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from sklearn.metrics import confusion_matrix
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.externals import joblib
 
 def load_data(database_filepath):
-    pass
+    engine = sql.create_engine('sqlite:///'+database_filepath)
+    df = pd.read_sql("select * from msg_cat",engine)
+    X = df.message.values
+    Y = df.drop(['id','message','original','genre'], axis=1).values
+    target_names = list(np.unique(Y))
+    return X, Y, target_names
 
 
 def tokenize(text):
-    pass
-
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+    return clean_tokens
 
 def build_model():
-    pass
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+    ])
+
+    parameters = {
+        'vect__ngram_range': ((1, 1), (1, 2)),
+        'clf__estimator__n_estimators': [25, 50],
+        'clf__estimator__criterion': ['entropy', 'gini']
+    }
+
+    return GridSearchCV(pipeline, param_grid=parameters, verbose=2, n_jobs=-1)
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    y_pred = model.predict(X_test)
+    print("Computing Accuracy for each Category:", accuracy)
+    for i in range(36):
+        print(category_names[i], " Accuracy: ", accuracy_score(Y_test[:,i],y_pred[:,i]))
+    print("\n Classification Report")
+    print(classification_report(Y_test, y_pred, target_names=category_names))
 
 
 def save_model(model, model_filepath):
-    pass
+    joblib.dump(model, model_filepath)
 
 
 def main():
