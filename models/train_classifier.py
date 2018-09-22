@@ -19,22 +19,15 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.externals import joblib
 
 def load_data(database_filepath):
-    '''
-    The data is loaded from sql database and data is divided into features and target variables
-    '''
     engine = sql.create_engine('sqlite:///'+database_filepath)
     df = pd.read_sql("select * from msg_cat",engine)
-    X = df.message.values
-    Y = df.drop(['id','message','original','genre'], axis=1).values
-    target_names = list(Y)
-    return X, Y, target_names
+    X = df.loc[:,"message"]
+    Y = df.iloc[:,4:]
+    target_names = list(Y.columns)
+    return X.values, Y.values, target_names
 
 
 def tokenize(text):
-    '''
-    NLP techniques like tokenization and lemmatization are applied on text data and 
-    clean tokens are returned.
-    '''
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
     clean_tokens = []
@@ -44,30 +37,22 @@ def tokenize(text):
     return clean_tokens
 
 def build_model():
-    '''
-    The pipeline is built, parameters used for optimizing grid search cv are defined
-    and GridSearch CV technique is applied
-    '''
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
 
-    params = {
+    parameters = {
         'vect__ngram_range': ((1, 1), (1, 2)),
         'clf__estimator__n_estimators': [25, 50],
         'clf__estimator__criterion': ['entropy', 'gini']
     }
 
-    return GridSearchCV(pipeline, param_grid=params, verbose=2, n_jobs=-1)
-
+    return GridSearchCV(pipeline, param_grid=parameters, verbose=2, n_jobs=-1)
+    
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    '''
-    The model is evaluated on test data, the accuracy for 36 categories is computed and 
-    a classification report is generated for the model.
-    '''
     y_pred = model.predict(X_test)
     print("Computing Accuracy for each Category")
     for i in range(36):
@@ -77,17 +62,10 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    '''
-    This method helps in saving the model as pickle file to be used later,
-    joblib library is used for saving the model.
-    '''
     joblib.dump(model, model_filepath)
 
 
 def main():
-    '''
-    Program execution begins here
-    '''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
