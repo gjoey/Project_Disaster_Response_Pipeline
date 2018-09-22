@@ -26,7 +26,7 @@ def load_data(database_filepath):
     df = pd.read_sql("select * from msg_cat",engine)
     X = df.message.values
     Y = df.drop(['id','message','original','genre'], axis=1).values
-    target_names = list(np.unique(Y))
+    target_names = list(Y)
     return X, Y, target_names
 
 
