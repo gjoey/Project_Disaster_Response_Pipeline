@@ -39,9 +39,9 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/')
 @app.route('/index')
 def index():
-	'''
-	Extracting data to create visualizations
-	'''
+    '''
+    Extracting data to create visualizations
+    '''
 	
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
