@@ -4,6 +4,9 @@ import pandas as pd
 import sqlalchemy as sql
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    This method loads the data into dataframe from csv files and returns the dataframe
+    '''
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages, categories,  how='inner', on=['id'])
@@ -11,6 +14,10 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    '''
+    This method cleans the dataframe by creating categories, and droping duplicates.
+    The cleaned dataframe is returned.
+    '''
     categories = df['categories'].apply(lambda x: pd.Series(x.split(';')))
     row = categories.iloc[0]
     # use this row to extract a list of new column names for categories.
@@ -34,11 +41,19 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    '''
+    The dataframe is saved into a database and stored
+    '''
+    
     engine = sql.create_engine('sqlite:///'+database_filename)
     df.to_sql('msg_cat', engine, index=False)  
 
 
 def main():
+    '''
+    Program execution begins here
+    '''
+    
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
