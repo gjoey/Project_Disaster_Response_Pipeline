@@ -14,7 +14,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.externals import joblib
 
@@ -69,7 +69,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     a classification report is generated for the model.
     '''
     y_pred = model.predict(X_test)
-    print("Computing Accuracy for each Category:", accuracy)
+    print("Computing Accuracy for each Category")
     for i in range(36):
         print(category_names[i], " Accuracy: ", accuracy_score(Y_test[:,i],y_pred[:,i]))
     print("\n Classification Report")
